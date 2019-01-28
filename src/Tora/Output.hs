@@ -7,11 +7,14 @@ import           Tora.Input
 import           Tora.PPrint
 import           Tora.Types
 
-display :: Reader A.Value Doc -> Maybe SearchResult -> IO (ReduceResult ())
-display _ Nothing = pure $ Halt ()
-display template (Just result) = do
-  mapM_ (printDoc . runReader template) (_prHits result)
-  pure $ Cont () (_prCursor result)
+displayTailResult :: Reader A.Value Doc -> TailResult -> IO (ReduceResult ())
+displayTailResult template result = do
+  mapM_ (printDoc . runReader template) (trstHits result)
+  pure $ Cont () (trstCursor result)
+
+displayInfoResult :: Bool -> InfoResult -> IO ()
+displayInfoResult True  = printDoc . renderInfoResultNoFields
+displayInfoResult False = printDoc . renderInfoResult
 
 printDoc :: Doc -> IO ()
 printDoc doc = do

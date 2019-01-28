@@ -6,6 +6,8 @@ module Tora.PPrint
        , TemplateSpec (..)
        , Style (..)
        , compile
+       , renderInfoResult
+       , renderInfoResultNoFields
        , defaultOpts
        , fetchData
        , fetchSeverity
@@ -17,6 +19,7 @@ import           Control.Monad.Reader
 import           Data.Aeson                   ((.:))
 import qualified Data.Aeson                   as A
 import           Data.Aeson.Types             (parseJSON, parseMaybe)
+import           Data.List
 import qualified Data.Text                    as T
 import qualified Data.Text.Lazy               as TL
 import           Data.Time.Format
@@ -55,17 +58,8 @@ severity Error       = text "ERROR"
 severity Notice      = text "NOTICE"
 severity (Other sev) = text sev
 
-appname :: TL.Text -> TL.Text -> Doc
-appname app pid = fill 5 (text app) <> (enclose (text "[") (text "]") (text pid))
-
-hostname :: TL.Text -> Doc
-hostname = fill 10 . text
-
 timestamp :: FormatTime t => TimeLocale -> t -> Doc
 timestamp locale = text . TL.pack . formatTime locale "%Y-%m-%d %H:%M:%S%Q%z"
-
-logmsg :: TL.Text -> Doc
-logmsg = vcat . map text . TL.split (== '\n')
 
 fetchData :: [T.Text] -> A.Value -> Doc
 fetchData [] (A.String value) =
@@ -81,15 +75,16 @@ fetchSeverity [] value =
   maybe empty severity $ parseMaybe parseJSON value
 fetchSeverity (x : xs) (A.Object value) =
   maybe empty (fetchSeverity xs) $ parseMaybe (.: x) value
+fetchSeverity _ _ = empty
 
-fetchTimestamp :: TimeLocale -> TimeZone -> [T.Text] -> A.Value -> Doc
-fetchTimestamp locale timezone [] value =
+fetchTimestamp :: TimeZone -> [T.Text] -> A.Value -> Doc
+fetchTimestamp timezone [] value =
   maybe empty (timestamp defaultTimeLocale . utcToZonedTime timezone)
   $ parseMaybe parseJSON value
-fetchTimestamp locale timezone (x : xs) (A.Object value) =
-  maybe empty (fetchTimestamp locale timezone xs)
+fetchTimestamp timezone (x : xs) (A.Object value) =
+  maybe empty (fetchTimestamp timezone xs)
   $ parseMaybe (.: x) value
-fetchTimestamp _ _ _ _ = empty
+fetchTimestamp _ _ _ = empty
 
 applyStyle :: Style -> Doc -> Doc
 applyStyle (Fill n) doc  = fill n doc
@@ -107,6 +102,21 @@ compile opts (Data fetch tmpl) = do
 compile opts (Union l r) = do
   acc' <- compile opts l
   compile (opts {_optAcc = acc'}) r
+
+renderInfoResultNoFields :: InfoResult -> Doc
+renderInfoResultNoFields (InfoResult items) = vcat (map (text . fst) $ sort items)
+
+renderInfoResult :: InfoResult -> Doc
+renderInfoResult (InfoResult items) = vcat (map dindex $ sort items)
+  where
+    dindex (index, fields) =
+      vcat [ text index
+           , indent 2 (vcat (map dfield $ sort fields))
+           ]
+      <> linebreak
+
+    dfield (name, value) =
+      text name <> text ": " <> text value
 
 infixr 0 <$$>
 (<$$>) :: TemplateSpec -> TemplateSpec -> TemplateSpec

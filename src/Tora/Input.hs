@@ -6,16 +6,18 @@ import           Control.Concurrent
 import           Control.Lens
 import           Control.Monad
 import           Data.Aeson           hiding (Options)
+import qualified Data.ByteString.Lazy as L
 import           Network.Wreq
 import qualified Network.Wreq.Session as WSESS
+import           Network.Wreq.Types
 import qualified Text.URI             as URI
 import           Tora.Types
 
 data ReduceResult a = Cont a (Maybe Cursor) | Halt a
 
-reduceWithDelay :: (st -> Maybe SearchResult -> IO (ReduceResult st))
+reduceWithDelay :: (st -> Maybe TailResult -> IO (ReduceResult st))
                 -> (Int, st)
-                -> Maybe SearchResult
+                -> Maybe TailResult
                 -> IO (ReduceResult (Int, st))
 reduceWithDelay reducer (n, st) results = do
   ans <- reducer st results
@@ -29,16 +31,25 @@ reduceWithDelay reducer (n, st) results = do
 stream :: WSESS.Session
        -> Options
        -> Endpoint
-       -> SearchQuery
-       -> (st, st -> Maybe SearchResult -> IO (ReduceResult st))
+       -> TailRequest
+       -> (st, st -> Maybe TailResult -> IO (ReduceResult st))
        -> IO (ReduceResult st)
-stream sess opts api query (st, reducer) =
-  stream' sess opts api query (0, st) reducer
+stream sess opts endpoint payload (st, reducer) =
+  stream' sess opts endpoint payload (0, st) reducer
+  where
+    stream' sess opts endpoint payload st reducer = do
+      rsp <- WSESS.customPayloadMethodWith "GET" opts sess (URI.renderStr (_uri endpoint)) payload
+      res <- reduceWithDelay reducer st (decode (rsp ^. responseBody))
+      case res of
+        Halt (_, st')    -> pure $ Halt st'
+        Cont st' Nothing -> stream' sess opts endpoint payload st' reducer
+        Cont st' cursor  -> stream' sess opts endpoint (payload {treqCursor = cursor}) st' reducer
 
-stream' sess opts api query st reducer = do
-  rsp <- WSESS.customPayloadMethodWith "GET" opts sess (URI.renderStr (_uri api)) (toJSON query)
-  res <- reduceWithDelay reducer st (decode (rsp ^. responseBody))
-  case res of
-    Halt (_, st')    -> pure $ Halt st'
-    Cont st' Nothing -> stream' sess opts api query st' reducer
-    Cont st' cursor  -> stream' sess opts api (query {_sqCursor = cursor}) st' reducer
+fetch :: FromJSON r
+      => WSESS.Session
+      -> Options
+      -> Endpoint
+      -> IO (Maybe r)
+fetch sess opts endpoint = do
+  rsp <- WSESS.getWith opts sess (URI.renderStr (_uri endpoint))
+  pure $ decode (rsp ^. responseBody)
