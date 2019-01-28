@@ -1,0 +1,56 @@
+name:                tora
+version:             0.1.0.0
+github:              "githubuser/tora"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2019 Author name here"
+
+extra-source-files:
+  - README.md
+  - CHANGELOG.md
+
+description: Please see the README on GitHub at <https://github.com/dsouza/tora#readme>
+
+dependencies:
+  - base >= 4.7 && < 5
+  - text
+  - wreq
+  - lens
+  - time
+  - aeson
+  - mtl
+  - argparser
+  - containers
+  - scientific
+  - modern-uri
+  - bytestring
+  - wl-pprint-text
+  - http-client
+  - http-client-tls
+
+library:
+  source-dirs: src
+
+executables:
+  tora:
+    main:                tora.hs
+    source-dirs:         app
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -W
+      - -with-rtsopts=-N
+    dependencies:
+      - tora
+
+tests:
+  tora-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - tora
