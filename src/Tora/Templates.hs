@@ -14,6 +14,8 @@ findTemplate "lukla-production" = findTemplate "syslog"
 findTemplate "lukla-staging" = findTemplate "syslog"
 findTemplate "renminbi-staging" = findTemplate "syslog"
 findTemplate "renminbi-production" = findTemplate "syslog"
+findTemplate "bifrost-production" = findTemplate "syslog"
+findTemplate "bifrost-staging" = findTemplate "syslog"
 findTemplate "syslog" =
   Just $ \timezone -> compile defaultOpts
     $ Data (fetchSeverity ["_source", "syslog", "severity"])
@@ -54,10 +56,28 @@ findTemplate "osquery-shell-history" =
     $ StyleT BreakLine
     $ Data (fetchData ["_source", "json", "columns", "command"])
     $ Done
+findTemplate "loadbalancer" =
+  Just $ \timezone -> compile defaultOpts
+    $ Data (fetchTimestamp timezone ["_source", "@timestamp"])
+    $ Data (fetchData ["_source", "host", "name"])
+    $ Data (fetchData ["_index"])
+    $ Data (fetchData ["_id"])
+    $ StyleT (Nest 4)
+    $ StyleT BreakLine
+    $ Data (fetchData ["_source", "meta", "bytes_read"])
+    $ Data (fetchData ["_source", "meta", "bytes_upload"])
+    $ Data (fetchData ["_source", "meta", "method"])
+    $ Data (fetchData ["_source", "meta", "hostname"])
+    $ Data (fetchData ["_source", "meta", "request_path"])
+    $ Data (fetchData ["_source", "meta", "status_code"])
+    $ Done
 findTemplate _ = error "Tora.Templates#findTemplate"
 
 findSearchPath :: String -> Maybe String
 findSearchPath "syslog" = Just "/logstash-syslog-*/_search"
+findSearchPath "loadbalancer" = Just "/logstash-xerpa-loadbalancer-*/_search"
+findSearchPath "bifrost-staging" = Just "/logstash-xerpa-bifrost-staging-*/_search"
+findSearchPath "bifrost-production" = Just "/logstash-xerpa-bifrost-production-*/_search"
 findSearchPath "lukla-staging" = Just "/logstash-xerpa-lukla-staging-*/_search"
 findSearchPath "lukla-production" = Just "/logstash-xerpa-lukla-production-*/_search"
 findSearchPath "renminbi-staging" = Just "/logstash-xerpa-renminbi-staging-*/_search"
