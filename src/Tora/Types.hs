@@ -1,6 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Tora.Types where
+module Tora.Types
+  ( Endpoint (..)
+  , Cursor ()
+  , SortDir (..)
+  , Severity (..)
+  , TailRequest (..)
+  , TailResult (..)
+  , InfoResult (..)
+  , Index
+  , FieldName
+  , FieldType
+  ) where
 
 import           Data.Aeson          ((.:), (.:?), (.=))
 import qualified Data.Aeson          as A

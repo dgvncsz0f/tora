@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Tora.IO.Tail where
+module Tora.IO.Tail
+  ( exec ) where
 
 import           Control.Lens
 import           Data.Maybe
@@ -23,7 +24,7 @@ exec strIndex strEndpoint strQuery = do
   let baseQuery = TailRequest (T.pack strQuery) 500 [("@timestamp", SortAsc), ("_id", SortAsc)] Nothing
   case (,) <$> findTemplate strIndex <*> findSearchPath strIndex of
     Nothing     ->
-      print "ERROR: could not find template"
+      putStrLn "ERROR: could not find template"
     Just (mkTmpl, path) -> do
       uri <- Endpoint <$> mkURI (T.toStrict $ T.pack $ strEndpoint ++ path)
       tmpl <- mkTmpl <$> getCurrentTimeZone

@@ -1,4 +1,7 @@
-module Tora.CLI where
+module Tora.CLI
+  ( ToraCLI (..)
+  , toraCLI
+  ) where
 
 import           System.Console.ArgParser
 

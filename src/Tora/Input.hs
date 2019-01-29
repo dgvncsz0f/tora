@@ -1,15 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Tora.Input where
+module Tora.Input
+  ( ReduceResult (..)
+  , stream
+  , fetch
+  ) where
 
 import           Control.Concurrent
 import           Control.Lens
-import           Control.Monad
 import           Data.Aeson           hiding (Options)
-import qualified Data.ByteString.Lazy as L
 import           Network.Wreq
 import qualified Network.Wreq.Session as WSESS
-import           Network.Wreq.Types
 import qualified Text.URI             as URI
 import           Tora.Types
 

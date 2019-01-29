@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Tora.IO.Info where
+module Tora.IO.Info
+  ( exec ) where
 
 import           Control.Lens
 import           Data.Maybe
@@ -21,7 +22,7 @@ exec :: Bool -> String -> String -> IO ()
 exec noFields strIndex strEndpoint = do
   case findMappingPath strIndex of
     Nothing     ->
-      print "ERROR: could not find index"
+      putStrLn "ERROR: could not find index"
     Just path -> do
       uri <- Endpoint <$> mkURI (T.toStrict $ T.pack $ strEndpoint ++ path)
       sess <- Ws.newSessionControl Nothing tlsManagerSettings

@@ -1,4 +1,8 @@
-module Tora.Output where
+module Tora.Output
+  ( printDoc
+  , displayTailResult
+  , displayInfoResult
+  ) where
 
 import           Control.Monad.Reader
 import qualified Data.Aeson                   as A

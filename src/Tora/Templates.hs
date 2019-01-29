@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Tora.Templates where
+module Tora.Templates
+  ( findTemplate
+  , findSearchPath
+  , findMappingPath
+  )where
 
-import           Data.List
-import qualified Data.Text.Lazy      as TL
-import           Data.Time.Format
 import           Data.Time.LocalTime
 import           Tora.PPrint
 
@@ -53,6 +54,7 @@ findTemplate "osquery-shell-history" =
     $ StyleT BreakLine
     $ Data (fetchData ["_source", "json", "columns", "command"])
     $ Done
+findTemplate _ = error "Tora.Templates#findTemplate"
 
 findSearchPath :: String -> Maybe String
 findSearchPath "syslog" = Just "/logstash-syslog-*/_search"
