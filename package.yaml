@@ -39,7 +39,6 @@ executables:
     ghc-options:
       - -threaded
       - -rtsopts
-      - -W
       - -with-rtsopts=-N
     dependencies:
       - tora
