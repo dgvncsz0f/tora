@@ -13,17 +13,19 @@ extra-source-files:
 description: Please see the README on GitHub at <https://github.com/dsouza/tora#readme>
 
 dependencies:
-  - base >= 4.7 && < 5
+  - mtl
+  - base
   - text
   - wreq
   - lens
   - time
+  - yaml
   - aeson
-  - mtl
   - argparser
   - scientific
   - modern-uri
   - bytestring
+  - megaparsec
   - wl-pprint-text
   - http-client
   - http-client-tls

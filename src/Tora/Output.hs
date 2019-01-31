@@ -8,7 +8,7 @@ import           Control.Monad.Reader
 import qualified Data.Aeson                   as A
 import           Text.PrettyPrint.Leijen.Text
 import           Tora.Input
-import           Tora.PPrint
+import           Tora.Template.PPrint
 import           Tora.Types
 
 displayTailResult :: Reader A.Value Doc -> TailResult -> IO (ReduceResult ())

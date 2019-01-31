@@ -19,7 +19,7 @@ import           Tora.Types
 wopts :: Options
 wopts = defaults & auth ?~ basicAuth "USERNAME" "PASSWORD"
 
-exec :: String -> String -> String -> IO ()
+exec :: Config -> String -> String -> String -> IO ()
 exec strIndex strEndpoint strQuery = do
   let baseQuery = TailRequest (T.pack strQuery) 500 [("@timestamp", SortAsc), ("_id", SortAsc)] Nothing
   case (,) <$> findTemplate strIndex <*> findSearchPath strIndex of
